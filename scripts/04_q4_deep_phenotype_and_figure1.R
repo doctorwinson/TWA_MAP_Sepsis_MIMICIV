@@ -12,20 +12,20 @@ locate_current_script <- function() {
     for (i in rev(seq_along(frames))) {
       ofile <- frames[[i]]$ofile
       if (!is.null(ofile) && nzchar(ofile)) {
-        return(normalizePath(ofile, winslash = "/", mustWork = FALSE))
+        return(ofile)
       }
     }
   }
 
   file_arg <- grep("^--file=", commandArgs(FALSE), value = TRUE)
   if (length(file_arg) > 0) {
-    return(normalizePath(sub("^--file=", "", file_arg[1]), winslash = "/", mustWork = FALSE))
+    return(sub("^--file=", "", file_arg[1]))
   }
 
   if (requireNamespace("rstudioapi", quietly = TRUE) && rstudioapi::isAvailable()) {
     ctx <- tryCatch(rstudioapi::getSourceEditorContext(), error = function(e) NULL)
     if (!is.null(ctx) && nzchar(ctx$path)) {
-      return(normalizePath(ctx$path, winslash = "/", mustWork = FALSE))
+      return(ctx$path)
     }
   }
 
@@ -33,16 +33,28 @@ locate_current_script <- function() {
 }
 
 find_archive_root <- function(start_dir) {
-  required_dirs <- c("01_SQL数据提取", "02_R统计复现", "03_图表", "04_文章", "05_附件")
-  current_dir <- normalizePath(start_dir, winslash = "/", mustWork = TRUE)
-  repeat {
-    if (all(dir.exists(file.path(current_dir, required_dirs)))) return(current_dir)
-    parent_dir <- dirname(current_dir)
-    if (identical(parent_dir, current_dir)) {
-      stop("Unable to locate the archive root automatically. Run this script from the archive root or one of its subdirectories.")
+  archive_dirs <- c("01_SQL数据提取", "02_R统计复现", "03_图表", "04_文章", "05_附件")
+  repo_dirs <- c("scripts", "sql")
+
+  for (candidate_dir in unique(c(start_dir, getwd()))) {
+    current_dir <- tryCatch(
+      normalizePath(candidate_dir, winslash = "/", mustWork = TRUE),
+      error = function(e) NA_character_
+    )
+    if (length(current_dir) != 1 || is.na(current_dir) || !nzchar(current_dir)) next
+
+    repeat {
+      if (all(dir.exists(file.path(current_dir, archive_dirs))) ||
+          all(dir.exists(file.path(current_dir, repo_dirs)))) {
+        return(current_dir)
+      }
+      parent_dir <- dirname(current_dir)
+      if (identical(parent_dir, current_dir)) break
+      current_dir <- parent_dir
     }
-    current_dir <- parent_dir
   }
+
+  stop("Unable to locate the repository/archive root automatically. Run this script from the repository root, archive root, or one of their subdirectories.")
 }
 
 this_script <- locate_current_script()
@@ -85,15 +97,19 @@ imp1_hours[, map_q := factor(map_q, levels = c("Q1", "Q2", "Q3", "Q4"))]
 main_dt <- merge(dat_lm18, imp1_hours[, .(stay_id, mean_map, map_q)], by = "stay_id", all.x = TRUE)
 main_dt <- main_dt[!is.na(map_q)]
 
-con <- dbConnect(
-  odbc(),
-  dsn = "mimic4_v31",
-  database = "mimic4_v31",
-  uid = "postgres",
-  pwd = "postgres",
-  server = "localhost",
-  port = 5432
+db <- Sys.getenv("MIMICIV_DSN", "mimic4_v31")
+db_uid <- Sys.getenv("MIMICIV_DB_UID", "")
+db_pwd <- Sys.getenv("MIMICIV_DB_PWD", "")
+conn_args <- list(
+  odbc::odbc(),
+  dsn = db,
+  database = Sys.getenv("MIMICIV_DATABASE", db),
+  server = Sys.getenv("MIMICIV_DB_SERVER", "localhost"),
+  port = as.integer(Sys.getenv("MIMICIV_DB_PORT", "5432"))
 )
+if (nzchar(db_uid)) conn_args$uid <- db_uid
+if (nzchar(db_pwd)) conn_args$pwd <- db_pwd
+con <- do.call(DBI::dbConnect, conn_args)
 
 phenotype_dt <- as.data.table(dbGetQuery(con, "
 WITH main_ids AS (
@@ -605,7 +621,7 @@ flow_box <- function(xmin, xmax, ymin, ymax, label, fill, size = 0.38, text_size
 fc <- flow_counts[1]
 
 main_nodes <- list(
-  list(y = 13.6, label = sprintf("Sepsis-3 ICU stays in bdmcc_population\nn = %s", format(fc$total_sepsis_icu, big.mark = ",")), fill = "#d7efe9"),
+  list(y = 13.6, label = sprintf("Sepsis-3 ICU stays in MIMIC-IV v3.1\nn = %s", format(fc$total_sepsis_icu, big.mark = ",")), fill = "#d7efe9"),
   list(y = 11.75, label = sprintf("First ICU admission\nn = %s", format(fc$first_icu, big.mark = ",")), fill = "#e8f5f2"),
   list(y = 9.9, label = sprintf("Adult first-ICU stays with ICU LOS ≥24 h\nn = %s", format(fc$adults_ge18, big.mark = ",")), fill = "#edf4ef"),
   list(y = 8.05, label = sprintf("No malignancy\nn = %s", format(fc$no_malignancy, big.mark = ",")), fill = "#edf4ef"),
@@ -691,15 +707,15 @@ flow_box <- function(xmin, xmax, ymin, ymax, label, fill, size = 0.38, text_size
 ge <- "\u2265"
 
 main_nodes <- list(
-  list(y = 13.6, label = sprintf("Sepsis-3 ICU stays in bdmcc_population\nn = %s", format(fc$total_sepsis_icu, big.mark = ",")), fill = "#d7efe9"),
+  list(y = 13.6, label = sprintf("Sepsis-3 ICU stays in MIMIC-IV v3.1\nn = %s", format(fc$total_sepsis_icu, big.mark = ",")), fill = "#d7efe9"),
   list(y = 11.75, label = sprintf("First ICU admission\nn = %s", format(fc$first_icu, big.mark = ",")), fill = "#e8f5f2"),
   list(y = 9.9, label = sprintf("Adult first-ICU stays\nwith ICU LOS %s24 h\nn = %s", ge, format(fc$adults_ge18, big.mark = ",")), fill = "#edf4ef"),
   list(y = 8.05, label = sprintf("No malignancy\nn = %s", format(fc$no_malignancy, big.mark = ",")), fill = "#edf4ef"),
   list(y = 6.2, label = sprintf("Pre-landmark design cohort\nn = %s", format(fc$pre_landmark_design, big.mark = ",")), fill = "#f4f0e8"),
   list(y = 4.35, label = sprintf("24-h landmark-eligible cohort\nn = %s", format(fc$landmark_eligible, big.mark = ",")), fill = "#f2eadf"),
   list(y = 2.5, label = sprintf("Any invasive ABP-MAP\nin first 24 h\n(itemid 220052)\nn = %s", format(fc$any_abp, big.mark = ",")), fill = "#f6ebd9"),
-  list(y = 0.75, label = sprintf("%s18 observed hourly\nABP-MAP values\nn = %s", ge, format(fc$ge18, big.mark = ",")), fill = "#f8dfc5"),
-  list(y = -1.50, label = sprintf("Primary analyzed cohort\n%s18 h observed +\npost-imputation QC pass\nn = %s", ge, format(fc$analyzed_ge18, big.mark = ",")), fill = "#f3c7a6")
+  list(y = 0.75, label = sprintf("%s18/24 observed\nhourly ABP-MAP\nvalues\nn = %s", ge, format(fc$ge18, big.mark = ",")), fill = "#f8dfc5"),
+  list(y = -1.50, label = sprintf("Primary analyzed cohort\n%s18/24 h observed +\npost-imputation QC pass\nn = %s", ge, format(fc$analyzed_ge18, big.mark = ",")), fill = "#f3c7a6")
 )
 
 exclude_nodes <- list(
@@ -707,14 +723,14 @@ exclude_nodes <- list(
   list(y = 9.9, label = sprintf("Excluded ICU LOS <24 h\nn = %s", format(fc$exclude_los_lt24, big.mark = ","))),
   list(y = 8.05, label = sprintf("Excluded malignancy\nn = %s", format(fc$exclude_malignancy, big.mark = ","))),
   list(y = 6.2, label = sprintf("Excluded pregnancy\nn = %s", format(fc$exclude_pregnancy, big.mark = ","))),
-  list(y = 4.35, label = sprintf("Not 24-h landmark-eligible /\ndesign QC\nn = %s", format(fc$exclude_landmark_qc, big.mark = ","))),
+  list(y = 4.35, label = sprintf("Excluded: not 24-h\nlandmark-eligible or\ndesign QC failure\nn = %s", format(fc$exclude_landmark_qc, big.mark = ","))),
   list(y = 2.5, label = sprintf("No valid invasive\nABP-MAP in first\n24 h\nn = %s", format(fc$no_abp, big.mark = ","))),
-  list(y = 0.75, label = sprintf("<18 observed\nhourly ABP-MAP\nvalues\nn = %s", format(fc$abp_lt18, big.mark = ","))),
+  list(y = 0.75, label = sprintf("<18/24 observed\nhourly ABP-MAP\nvalues\nn = %s", format(fc$abp_lt18, big.mark = ","))),
   list(y = -1.50, label = sprintf("Post-imputation QC failure\nn = %s", format(fc$exclude_post_mi_qc, big.mark = ",")))
 )
 
 branch_nodes <- list(
-  list(x = -3.45, y = -4.45, label = sprintf("Sensitivity cohort\n%s20 observed hours\nn = %s", ge, format(fc$analyzed_ge20, big.mark = ",")), fill = "#f0dcc9"),
+  list(x = -3.45, y = -4.45, label = sprintf("Sensitivity cohort\n%s20/24 observed hours\nn = %s", ge, format(fc$analyzed_ge20, big.mark = ",")), fill = "#f0dcc9"),
   list(x = 3.45, y = -4.45, label = sprintf("Sensitivity cohort\n24/24 observed hours\nn = %s", format(fc$analyzed_ge24, big.mark = ",")), fill = "#ead3bc")
 )
 
@@ -762,7 +778,7 @@ p <- p +
            linewidth = 0.34, color = "#55636b",
            arrow = arrow(length = unit(0.12, "inches"), type = "closed")) +
   annotate("text", x = 0, y = -6.18,
-           label = sprintf("Primary cohort required %s18 observed hourly invasive ABP-MAP values in the first 24 h; sensitivity cohorts used %s20 h and complete 24/24 h observation thresholds.", ge, ge),
+           label = sprintf("Primary cohort required %s18/24 observed hourly invasive ABP-MAP values in the first 24 h; sensitivity cohorts used %s20/24 h and complete 24/24 h observation thresholds.", ge, ge),
            family = "sans", size = 3.32, color = "#33424a")
 
 fig_png <- file.path(output_dir, "Figure_1_flow_diagram_major_revision.png")

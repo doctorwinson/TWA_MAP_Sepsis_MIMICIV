@@ -2,11 +2,14 @@
 
 This folder contains the SQL workflow used to build the main analysis tables for the invasive ABP-MAP study.
 
+Public repository:
+
+- <https://github.com/doctorwinson/TWA_MAP_Sepsis_MIMICIV>
+
 ## Files
 
 - `01_MAP_trajectory_extraction_EN.sql`
 - `02_vasopressor_extraction_EN.sql`
-
 
 ## Recommended Execution Order
 
@@ -35,7 +38,7 @@ Main features:
 - aggregates MAP values by ICU hour
 - applies the hourly coverage threshold for inclusion
 
-## 2. `02_vasopressor_extraction_EN.sql`
+### 2. `02_vasopressor_extraction_EN.sql`
 
 This script extracts vasopressor exposure during the first 24 ICU hours and converts drug-specific exposure to norepinephrine-equivalent values.
 
@@ -64,10 +67,15 @@ Before running these scripts, the following tables must already be available:
 
 ## Important Scope Note
 
-This archive does **not** include the SQL used to build `bdmcc.bdmcc_population` from raw MIMIC-IV tables.
+This archive does not include the SQL used to build `bdmcc.bdmcc_population` from raw MIMIC-IV tables.
 
 The current SQL workflow therefore starts from an existing Sepsis-3 base cohort and covers the downstream extraction steps used for the present study.
 
+## Downstream Use in R
+
+The output tables generated here are used by the R scripts in:
+
+- `../scripts/`
 
 These R scripts perform:
 
