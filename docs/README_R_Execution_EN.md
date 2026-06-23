@@ -32,8 +32,8 @@ This public English set includes only the files required for direct reproduction
 
 ## Runtime assumptions
 
-- Run the scripts from RStudio or R in the existing archive structure.
-- The scripts automatically locate the archive root and set the working directory.
+- Run the scripts from RStudio or R in either this standalone repository or the existing archive structure.
+- The scripts automatically locate the repository/archive root and set the working directory.
 - The local PostgreSQL DSN expected by the scripts is `mimic4_v31` by default.
 - Optional connection details can be supplied through `MIMICIV_DSN`, `MIMICIV_DATABASE`, `MIMICIV_DB_SERVER`, `MIMICIV_DB_PORT`, `MIMICIV_DB_UID`, and `MIMICIV_DB_PWD`.
-- The archive should already contain the `data/` and `outputs_abp_map/` folders or allow the scripts to create them.
+- The repository/archive should already contain the `data/` and `outputs_abp_map/` folders or allow the scripts to create them.

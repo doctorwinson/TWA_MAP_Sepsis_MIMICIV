@@ -39,7 +39,7 @@ The SQL workflow starts from an existing Sepsis-3 base cohort and builds the dow
 - R with the packages used in the scripts.
 - Local PostgreSQL DSN: `mimic4_v31`.
 - Authorized access to MIMIC-IV v3.1.
-- The archive-style directory structure expected by the supplied scripts.
+- Either this standalone repository layout or the original archive-style directory structure expected by the supplied scripts.
 
 Database connection settings can be supplied through environment variables:
 

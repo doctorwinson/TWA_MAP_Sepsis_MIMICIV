@@ -6,3 +6,5 @@
 Thumbs.db
 *.tmp
 *.log
+data/
+outputs_abp_map/

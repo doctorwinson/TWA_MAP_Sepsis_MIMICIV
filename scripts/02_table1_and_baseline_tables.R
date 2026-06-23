@@ -11,20 +11,20 @@ locate_current_script <- function() {
     for (i in rev(seq_along(frames))) {
       ofile <- frames[[i]]$ofile
       if (!is.null(ofile) && nzchar(ofile)) {
-        return(normalizePath(ofile, winslash = "/", mustWork = FALSE))
+        return(ofile)
       }
     }
   }
 
   file_arg <- grep("^--file=", commandArgs(FALSE), value = TRUE)
   if (length(file_arg) > 0) {
-    return(normalizePath(sub("^--file=", "", file_arg[1]), winslash = "/", mustWork = FALSE))
+    return(sub("^--file=", "", file_arg[1]))
   }
 
   if (requireNamespace("rstudioapi", quietly = TRUE) && rstudioapi::isAvailable()) {
     ctx <- tryCatch(rstudioapi::getSourceEditorContext(), error = function(e) NULL)
     if (!is.null(ctx) && nzchar(ctx$path)) {
-      return(normalizePath(ctx$path, winslash = "/", mustWork = FALSE))
+      return(ctx$path)
     }
   }
 
@@ -32,16 +32,28 @@ locate_current_script <- function() {
 }
 
 find_archive_root <- function(start_dir) {
-  required_dirs <- c("01_SQL数据提取", "02_R统计复现", "03_图表", "04_文章", "05_附件")
-  current_dir <- normalizePath(start_dir, winslash = "/", mustWork = TRUE)
-  repeat {
-    if (all(dir.exists(file.path(current_dir, required_dirs)))) return(current_dir)
-    parent_dir <- dirname(current_dir)
-    if (identical(parent_dir, current_dir)) {
-      stop("Unable to locate the archive root automatically. Run this script from the archive root or one of its subdirectories.")
+  archive_dirs <- c("01_SQL数据提取", "02_R统计复现", "03_图表", "04_文章", "05_附件")
+  repo_dirs <- c("scripts", "sql")
+
+  for (candidate_dir in unique(c(start_dir, getwd()))) {
+    current_dir <- tryCatch(
+      normalizePath(candidate_dir, winslash = "/", mustWork = TRUE),
+      error = function(e) NA_character_
+    )
+    if (length(current_dir) != 1 || is.na(current_dir) || !nzchar(current_dir)) next
+
+    repeat {
+      if (all(dir.exists(file.path(current_dir, archive_dirs))) ||
+          all(dir.exists(file.path(current_dir, repo_dirs)))) {
+        return(current_dir)
+      }
+      parent_dir <- dirname(current_dir)
+      if (identical(parent_dir, current_dir)) break
+      current_dir <- parent_dir
     }
-    current_dir <- parent_dir
   }
+
+  stop("Unable to locate the repository/archive root automatically. Run this script from the repository root, archive root, or one of their subdirectories.")
 }
 
 this_script <- locate_current_script()

@@ -121,7 +121,7 @@ source("scripts/04_q4_deep_phenotype_and_figure1.R", encoding = "UTF-8")
 source("scripts/05_observed_mean_no_MI_sensitivity.R", encoding = "UTF-8")
 ```
 
-Each script automatically locates the archive root and sets the working directory when run from the existing archive structure.
+Each script automatically locates the repository/archive root and sets the working directory when run from this standalone repository or the existing archive structure.
 
 ## Output locations
 
