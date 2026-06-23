@@ -4,12 +4,13 @@ This folder contains the R scripts required to reproduce the final statistical a
 
 ## Required scripts
 
-The core reproduction workflow is based on four numbered scripts:
+The core reproduction workflow is based on five numbered scripts:
 
 1. `scripts/01_main_analysis_generate_cache_and_primary_results.R`
 2. `scripts/02_table1_and_baseline_tables.R`
 3. `scripts/03_major_revision_supplementary_analyses.R`
 4. `scripts/04_q4_deep_phenotype_and_figure1.R`
+5. `scripts/05_observed_mean_no_MI_sensitivity.R`
 
 These scripts should be run in numerical order.
 
@@ -59,6 +60,15 @@ Main outputs include:
 - phenotype-augmented model results
 - final Figure 1 flow diagram
 
+### 5. `05_observed_mean_no_MI_sensitivity.R`
+
+This script runs the no-imputation observed-hour MAP sensitivity analyses. It recomputes early MAP exposure using observed hourly invasive ABP-MAP values only and repeats the primary adjusted Cox model for h00-h23 and h02-h23 observed-hour mean MAP.
+
+Main outputs include:
+
+- observed available-hour mean MAP sensitivity results
+- Supplementary Table S18 source file
+
 ## Required inputs
 
 The scripts assume that the SQL extraction workflow has already been run and that the following database tables are available:
@@ -68,9 +78,17 @@ The scripts assume that the SQL extraction workflow has already been run and tha
 - `bdmcc.base_landmark_surv_abp`
 - `bdmcc.vaso_ne_equiv_0_24h`
 
-The scripts also expect local access to MIMIC-IV v3.1 through the PostgreSQL DSN:
+The scripts also expect local access to MIMIC-IV v3.1 through a PostgreSQL DSN:
 
 - `mimic4_v31`
+
+By default, the public scripts use this DSN without hard-coded credentials. If your local ODBC configuration requires explicit connection details, set environment variables before running the scripts:
+
+- `MIMICIV_DSN` (default: `mimic4_v31`)
+- `MIMICIV_DATABASE` (default: same as `MIMICIV_DSN`)
+- `MIMICIV_DB_SERVER` (default: `localhost`)
+- `MIMICIV_DB_PORT` (default: `5432`)
+- `MIMICIV_DB_UID` and `MIMICIV_DB_PWD` (optional)
 
 Patient-level data are not included in this release.
 
@@ -100,6 +118,7 @@ source("scripts/01_main_analysis_generate_cache_and_primary_results.R", encoding
 source("scripts/02_table1_and_baseline_tables.R", encoding = "UTF-8")
 source("scripts/03_major_revision_supplementary_analyses.R", encoding = "UTF-8")
 source("scripts/04_q4_deep_phenotype_and_figure1.R", encoding = "UTF-8")
+source("scripts/05_observed_mean_no_MI_sensitivity.R", encoding = "UTF-8")
 ```
 
 Each script automatically locates the archive root and sets the working directory when run from the existing archive structure.

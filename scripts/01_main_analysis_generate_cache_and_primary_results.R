@@ -116,16 +116,19 @@ make_unique_prefix <- function(prefix, out_dir = ".") {
     k <- k + 1
   }
 }
-db <- "mimic4_v31"
-con <- DBI::dbConnect(
+db <- Sys.getenv("MIMICIV_DSN", "mimic4_v31")
+db_uid <- Sys.getenv("MIMICIV_DB_UID", "")
+db_pwd <- Sys.getenv("MIMICIV_DB_PWD", "")
+conn_args <- list(
   odbc::odbc(),
-  dsn      = db,
-  database = db,
-  uid      = "postgres",
-  pwd      = "postgres",
-  server   = "localhost",
-  port     = 5432
+  dsn = db,
+  database = Sys.getenv("MIMICIV_DATABASE", db),
+  server = Sys.getenv("MIMICIV_DB_SERVER", "localhost"),
+  port = as.integer(Sys.getenv("MIMICIV_DB_PORT", "5432"))
 )
+if (nzchar(db_uid)) conn_args$uid <- db_uid
+if (nzchar(db_pwd)) conn_args$pwd <- db_pwd
+con <- do.call(DBI::dbConnect, conn_args)
 pop_sql <- "
 SELECT *
 FROM bdmcc.bdmcc_population;

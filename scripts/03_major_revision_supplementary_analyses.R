@@ -429,15 +429,19 @@ ph_fit <- coxph(
 )
 ph_test <- as.data.table(cox.zph(ph_fit)$table, keep.rownames = "Term")
 
-con <- dbConnect(
-  odbc(),
-  dsn = "mimic4_v31",
-  database = "mimic4_v31",
-  uid = "postgres",
-  pwd = "postgres",
-  server = "localhost",
-  port = 5432
+db <- Sys.getenv("MIMICIV_DSN", "mimic4_v31")
+db_uid <- Sys.getenv("MIMICIV_DB_UID", "")
+db_pwd <- Sys.getenv("MIMICIV_DB_PWD", "")
+conn_args <- list(
+  odbc::odbc(),
+  dsn = db,
+  database = Sys.getenv("MIMICIV_DATABASE", db),
+  server = Sys.getenv("MIMICIV_DB_SERVER", "localhost"),
+  port = as.integer(Sys.getenv("MIMICIV_DB_PORT", "5432"))
 )
+if (nzchar(db_uid)) conn_args$uid <- db_uid
+if (nzchar(db_pwd)) conn_args$pwd <- db_pwd
+con <- do.call(DBI::dbConnect, conn_args)
 
 flow_counts <- as.data.table(dbGetQuery(con, "
 WITH any_abp AS (
