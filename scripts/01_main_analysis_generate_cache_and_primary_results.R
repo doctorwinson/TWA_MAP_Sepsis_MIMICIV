@@ -33,7 +33,7 @@ locate_current_script <- function() {
 }
 
 find_archive_root <- function(start_dir) {
-  archive_dirs <- c("01_SQL数据提取", "02_R统计复现", "03_图表", "04_文章", "05_附件")
+  archive_dirs <- c("01_SQL\u6570\u636e\u63d0\u53d6", "02_R\u7edf\u8ba1\u590d\u73b0", "03_\u56fe\u8868", "04_\u6587\u7ae0", "05_\u9644\u4ef6")
   repo_dirs <- c("scripts", "sql")
 
   for (candidate_dir in unique(c(start_dir, getwd()))) {
@@ -76,9 +76,9 @@ suppressPackageStartupMessages({
 hour_cols   <- sprintf("h%02d", 0:23)
 t0          <- 24
 tau_icu     <- 30 * 24
-m_imp       <- 5
-maxit_imp   <- 10
-seed_imp    <- 42
+m_imp       <- as.integer(Sys.getenv("MIMICIV_MI_M", "40"))
+maxit_imp   <- as.integer(Sys.getenv("MIMICIV_MI_MAXIT", "10"))
+seed_imp    <- as.integer(Sys.getenv("MIMICIV_MI_SEED", "42"))
 
 thr_hypo    <- 65
 dt_hour     <- 1
@@ -255,7 +255,7 @@ calc_ttr_auc <- function(map_mat, thr = 65, dt = 1) {
 
   list(ttr = ttr, auc = auc)
 }
-run_mi_hours_only <- function(df, covars, hour_cols, m = 5, maxit = 10, seed = 42,
+run_mi_hours_only <- function(df, covars, hour_cols, m = 40, maxit = 10, seed = 42,
                               max_retry_drop_na = 2) {
 
   keep_cols <- unique(c("stay_id","time_lm_days","event_lm", covars, hour_cols))
@@ -548,7 +548,7 @@ make_table_quartile_map <- function(pooled_q, cut_q) {
     P   = sum_mapq$p.value,
     stringsAsFactors = FALSE
   )
-  table2$`HR (95% CI)` <- sprintf("%.2f (%.2f–%.2f)", table2$HR, table2$LCI, table2$UCI)
+  table2$`HR (95% CI)` <- sprintf("%.2f (%.2f-%.2f)", table2$HR, table2$LCI, table2$UCI)
   table2[, c("Exposure","MAP_Quartile_Range_mmHg","HR (95% CI)","P")]
 }
 
@@ -577,7 +577,7 @@ make_table_quartile_rank <- function(pooled_q, range_dt, label_prefix,
     P   = sum_qx$p.value,
     stringsAsFactors = FALSE
   )
-  table2$`HR (95% CI)` <- sprintf("%.2f (%.2f–%.2f)", table2$HR, table2$LCI, table2$UCI)
+  table2$`HR (95% CI)` <- sprintf("%.2f (%.2f-%.2f)", table2$HR, table2$LCI, table2$UCI)
   table2[, c("Exposure","Quartile_Range","HR (95% CI)","P")]
 }
 make_table_linear <- function(pooled_lin, scale = 1, label = "Exposure") {
@@ -592,7 +592,7 @@ make_table_linear <- function(pooled_lin, scale = 1, label = "Exposure") {
 
   out <- data.frame(
     Exposure = label,
-    `HR (95% CI)` = sprintf("%.2f (%.2f–%.2f)", hr, lci, uci),
+    `HR (95% CI)` = sprintf("%.2f (%.2f-%.2f)", hr, lci, uci),
     P = row$p.value,
     stringsAsFactors = FALSE
   )
@@ -796,7 +796,7 @@ plot_spline_hr_generic <- function(imp, covars, hour_cols,
   ))
 }
 run_analysis_bundle <- function(df_lm, hours_threshold, covars, hour_cols, label,
-                                m = 5, maxit = 10, seed = 42,
+                                m = 40, maxit = 10, seed = 42,
                                 thr_hypo = 65, dt = 1,
                                 do_ttr = TRUE, do_ttr_quartile = FALSE, do_plots = TRUE,
                                 out_dir = ".",

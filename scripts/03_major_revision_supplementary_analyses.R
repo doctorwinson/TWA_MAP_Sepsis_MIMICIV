@@ -32,7 +32,7 @@ locate_current_script <- function() {
 }
 
 find_archive_root <- function(start_dir) {
-  archive_dirs <- c("01_SQL数据提取", "02_R统计复现", "03_图表", "04_文章", "05_附件")
+  archive_dirs <- c("01_SQL\u6570\u636e\u63d0\u53d6", "02_R\u7edf\u8ba1\u590d\u73b0", "03_\u56fe\u8868", "04_\u6587\u7ae0", "05_\u9644\u4ef6")
   repo_dirs <- c("scripts", "sql")
 
   for (candidate_dir in unique(c(start_dir, getwd()))) {
@@ -75,6 +75,9 @@ suppressPackageStartupMessages({
 cache_file <- "outputs_abp_map/cache/cache_main_ge18h_Model2_SOFA_minimal.rds"
 output_dir <- "outputs_abp_map/revision_major"
 if (!dir.exists(output_dir)) dir.create(output_dir, recursive = TRUE)
+m_imp <- as.integer(Sys.getenv("MIMICIV_MI_M", "40"))
+maxit_imp <- as.integer(Sys.getenv("MIMICIV_MI_MAXIT", "10"))
+seed_imp <- as.integer(Sys.getenv("MIMICIV_MI_SEED", "42"))
 
 stopifnot(file.exists(cache_file))
 cache <- readRDS(cache_file)
@@ -127,7 +130,7 @@ sanitize_covars_from_imp1 <- function(imp, covars) {
   list(covars = setdiff(cov_use, unique(dropped)), dropped = unique(dropped))
 }
 
-run_mi_hours_only <- function(df, covars, hour_cols, m = 5, maxit = 10, seed = 42, max_retry_drop_na = 2) {
+run_mi_hours_only <- function(df, covars, hour_cols, m = 40, maxit = 10, seed = 42, max_retry_drop_na = 2) {
   keep_cols <- unique(c("stay_id", "time_lm_days", "event_lm", covars, hour_cols))
   dat0 <- as.data.frame(df[, ..keep_cols])
 
@@ -222,7 +225,7 @@ cov_m5 <- unique(has_vars(c(
   "lab_fst_24h_lactate_first", "ne_equiv_mean_0_24h"
 ), dat_lm18))
 
-mi_res <- run_mi_hours_only(dat_lm18, cov_main, hour_cols, m = 5, maxit = 10, seed = 42)
+mi_res <- run_mi_hours_only(dat_lm18, cov_main, hour_cols, m = m_imp, maxit = maxit_imp, seed = seed_imp)
 imp <- mi_res$imp
 dropped_ids <- mi_res$dropped_stay_id
 fixed_extra <- unique(dat_lm18[, .(

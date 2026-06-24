@@ -33,7 +33,7 @@ locate_current_script <- function() {
 }
 
 find_archive_root <- function(start_dir) {
-  archive_dirs <- c("01_SQL数据提取", "02_R统计复现", "03_图表", "04_文章", "05_附件")
+  archive_dirs <- c("01_SQL\u6570\u636e\u63d0\u53d6", "02_R\u7edf\u8ba1\u590d\u73b0", "03_\u56fe\u8868", "04_\u6587\u7ae0", "05_\u9644\u4ef6")
   repo_dirs <- c("scripts", "sql")
 
   for (candidate_dir in unique(c(start_dir, getwd()))) {
@@ -67,13 +67,13 @@ suppressPackageStartupMessages({
 })
 
 fig_paths <- c(
-  "Figure 1" = file.path("03_图表", "01_主文图片", "Figure_1_flow_diagram.png"),
-  "Figure 2" = file.path("03_图表", "01_主文图片", "Figure_2_TWA_MAP_spline.png"),
-  "Figure 3" = file.path("03_图表", "01_主文图片", "Figure_3_TTRlt65_spline.png"),
-  "Figure S1" = file.path("03_图表", "02_补充图片", "Supplementary_Figure_S1_ge20h_spline.png"),
-  "Figure S2" = file.path("03_图表", "02_补充图片", "Supplementary_Figure_S2_complete24h_spline.png"),
-  "Figure S3" = file.path("03_图表", "02_补充图片", "Supplementary_Figure_S3_SAPSII_spline.png"),
-  "Figure S4" = file.path("03_图表", "02_补充图片", "Supplementary_Figure_S4_NE_adjusted_spline.png")
+  "Figure 1" = file.path("03_\u56fe\u8868", "01_\u4e3b\u6587\u56fe\u7247", "Figure_1_flow_diagram.png"),
+  "Figure 2" = file.path("03_\u56fe\u8868", "01_\u4e3b\u6587\u56fe\u7247", "Figure_2_TWA_MAP_spline.png"),
+  "Figure 3" = file.path("03_\u56fe\u8868", "01_\u4e3b\u6587\u56fe\u7247", "Figure_3_TTRlt65_spline.png"),
+  "Figure S1" = file.path("03_\u56fe\u8868", "02_\u8865\u5145\u56fe\u7247", "Supplementary_Figure_S1_ge20h_spline.png"),
+  "Figure S2" = file.path("03_\u56fe\u8868", "02_\u8865\u5145\u56fe\u7247", "Supplementary_Figure_S2_complete24h_spline.png"),
+  "Figure S3" = file.path("03_\u56fe\u8868", "02_\u8865\u5145\u56fe\u7247", "Supplementary_Figure_S3_SAPSII_spline.png"),
+  "Figure S4" = file.path("03_\u56fe\u8868", "02_\u8865\u5145\u56fe\u7247", "Supplementary_Figure_S4_NE_adjusted_spline.png")
 )
 
 show_png <- function(path, title_text) {

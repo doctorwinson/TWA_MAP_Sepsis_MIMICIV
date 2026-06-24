@@ -32,7 +32,7 @@ locate_current_script <- function() {
 }
 
 find_archive_root <- function(start_dir) {
-  archive_dirs <- c("01_SQL数据提取", "02_R统计复现", "03_图表", "04_文章", "05_附件")
+  archive_dirs <- c("01_SQL\u6570\u636e\u63d0\u53d6", "02_R\u7edf\u8ba1\u590d\u73b0", "03_\u56fe\u8868", "04_\u6587\u7ae0", "05_\u9644\u4ef6")
   repo_dirs <- c("scripts", "sql")
 
   for (candidate_dir in unique(c(start_dir, getwd()))) {
@@ -275,6 +275,115 @@ save(
 )
 
 cat("\nDone. Output saved to:\n  ./data/map.csv\n  ./data/df.Rdata\n")
+format_num_cell <- function(x, digits = 2) {
+  if (all(is.na(x))) return("")
+  sprintf(
+    paste0("%.", digits, "f [%.", digits, "f, %.", digits, "f]"),
+    stats::median(x, na.rm = TRUE),
+    stats::quantile(x, 0.25, na.rm = TRUE),
+    stats::quantile(x, 0.75, na.rm = TRUE)
+  )
+}
+
+format_cat_cell <- function(x, level) {
+  den <- sum(!is.na(x))
+  if (den == 0) return("")
+  num <- sum(x == level, na.rm = TRUE)
+  sprintf("%d (%.1f%%)", num, 100 * num / den)
+}
+
+smd_numeric_vs_ref <- function(x, group, ref = "Q2") {
+  out <- vapply(setdiff(levels(group), ref), function(gp) {
+    x1 <- x[group == gp]
+    x0 <- x[group == ref]
+    s <- sqrt((stats::var(x1, na.rm = TRUE) + stats::var(x0, na.rm = TRUE)) / 2)
+    if (!is.finite(s) || s == 0) return(NA_real_)
+    abs((mean(x1, na.rm = TRUE) - mean(x0, na.rm = TRUE)) / s)
+  }, numeric(1))
+  if (all(is.na(out))) NA_real_ else max(out, na.rm = TRUE)
+}
+
+smd_categorical_vs_ref <- function(x, group, ref = "Q2") {
+  levs <- levels(factor(x))
+  out <- c()
+  for (gp in setdiff(levels(group), ref)) {
+    for (lv in levs) {
+      p1 <- mean(x[group == gp] == lv, na.rm = TRUE)
+      p0 <- mean(x[group == ref] == lv, na.rm = TRUE)
+      denom <- sqrt((p1 * (1 - p1) + p0 * (1 - p0)) / 2)
+      if (is.finite(denom) && denom > 0) out <- c(out, abs((p1 - p0) / denom))
+    }
+  }
+  if (length(out) == 0 || all(is.na(out))) NA_real_ else max(out, na.rm = TRUE)
+}
+
+digits_for_var <- function(v) {
+  if (v %in% c("Age", "charlson", "sofa", "sapsii")) return(0)
+  if (v %in% c("map24_mean", "NE_equiv_Mean")) return(3)
+  2
+}
+
+summary_rows <- list()
+for (v in vars) {
+  if (!v %in% names(df)) next
+  if (v %in% cat_covar) {
+    x <- factor(df[[v]])
+    for (lv in levels(x)) {
+      row <- data.frame(
+        Variable = v,
+        Level = as.character(lv),
+        Overall = format_cat_cell(x, lv),
+        Q1 = format_cat_cell(x[df$Group == "Q1"], lv),
+        Q2 = format_cat_cell(x[df$Group == "Q2"], lv),
+        Q3 = format_cat_cell(x[df$Group == "Q3"], lv),
+        Q4 = format_cat_cell(x[df$Group == "Q4"], lv),
+        SMD_max_vs_Q2 = smd_categorical_vs_ref(x, df$Group),
+        stringsAsFactors = FALSE
+      )
+      summary_rows[[length(summary_rows) + 1]] <- row
+    }
+  } else {
+    x <- suppressWarnings(as.numeric(df[[v]]))
+    digs <- digits_for_var(v)
+    row <- data.frame(
+      Variable = v,
+      Level = "",
+      Overall = format_num_cell(x, digs),
+      Q1 = format_num_cell(x[df$Group == "Q1"], digs),
+      Q2 = format_num_cell(x[df$Group == "Q2"], digs),
+      Q3 = format_num_cell(x[df$Group == "Q3"], digs),
+      Q4 = format_num_cell(x[df$Group == "Q4"], digs),
+      SMD_max_vs_Q2 = smd_numeric_vs_ref(x, df$Group),
+      stringsAsFactors = FALSE
+    )
+    summary_rows[[length(summary_rows) + 1]] <- row
+  }
+}
+
+baseline_summary <- dplyr::bind_rows(summary_rows)
+write.csv(baseline_summary, "./data/table1_summary.csv", row.names = FALSE, na = "")
+write.csv(baseline_summary, "./data/tbl_smd_body.csv", row.names = FALSE, na = "")
+write.csv(
+  data.frame(
+    Variable = c("Overall", "Q1", "Q2", "Q3", "Q4", "SMD_max_vs_Q2"),
+    Description = c(
+      "All patients",
+      "TWA-MAP quartile 1",
+      "TWA-MAP quartile 2",
+      "TWA-MAP quartile 3",
+      "TWA-MAP quartile 4",
+      "Maximum absolute standardized mean difference versus Q2"
+    ),
+    stringsAsFactors = FALSE
+  ),
+  "./data/tbl_smd_header.csv",
+  row.names = FALSE
+)
+saveRDS(baseline_summary, "./data/tbl_smd.rds")
+cat("Saved reproducible baseline summary to ./data/table1_summary.csv\n")
+
+strong_table_export <- identical(Sys.getenv("MIMICIV_STRONG_TABLE_EXPORT", "0"), "1")
+if (strong_table_export) {
 tbl_num = 0
 cohort_attrib = 'original'
 str(df)
@@ -312,9 +421,21 @@ paste0('Supplementary Table ', update_obj(tbl_num), '. Basic demographic charact
   assign(tbl_cap_name, ., envir = .GlobalEnv)
 
 save_tbl_obj(tbl_name, tbl_cap_name)
-write_tbl_to_docx(write_path = './data/tbl.docx',
-                  tbl_name = tbl_name,
-                  cap_name = tbl_cap_name)
+docx_status <- tryCatch(
+  {
+    write_tbl_to_docx(
+      write_path = "./data/tbl.docx",
+      tbl_name = tbl_name,
+      cap_name = tbl_cap_name
+    )
+    TRUE
+  },
+  error = function(e) {
+    warning("DOCX export skipped: ", conditionMessage(e), call. = FALSE)
+    FALSE
+  }
+)
+cat("DOCX export status:", docx_status, "\n")
 tbl_num <- 0
 add_tbl_obj(tbl_num)
 
@@ -341,5 +462,8 @@ print(tbl_obj)
 cat("Saved SMD Table 1 object to ./data/tbl_smd.rds\n")
 cat("Saved SMD Table 1 body to ./data/tbl_smd_body.csv\n")
 cat("Saved SMD Table 1 header to ./data/tbl_smd_header.csv\n")
+} else {
+  cat("Strong formatted table export skipped; set MIMICIV_STRONG_TABLE_EXPORT=1 to enable it.\n")
+}
 
 try(DBI::dbDisconnect(con), silent = TRUE)

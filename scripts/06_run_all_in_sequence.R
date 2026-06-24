@@ -33,7 +33,7 @@ locate_current_script <- function() {
 }
 
 find_archive_root <- function(start_dir) {
-  archive_dirs <- c("01_SQL数据提取", "02_R统计复现", "03_图表", "04_文章", "05_附件")
+  archive_dirs <- c("01_SQL\u6570\u636e\u63d0\u53d6", "02_R\u7edf\u8ba1\u590d\u73b0", "03_\u56fe\u8868", "04_\u6587\u7ae0", "05_\u9644\u4ef6")
   repo_dirs <- c("scripts", "sql")
 
   for (candidate_dir in unique(c(start_dir, getwd()))) {

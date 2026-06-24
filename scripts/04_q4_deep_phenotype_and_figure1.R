@@ -33,7 +33,7 @@ locate_current_script <- function() {
 }
 
 find_archive_root <- function(start_dir) {
-  archive_dirs <- c("01_SQL数据提取", "02_R统计复现", "03_图表", "04_文章", "05_附件")
+  archive_dirs <- c("01_SQL\u6570\u636e\u63d0\u53d6", "02_R\u7edf\u8ba1\u590d\u73b0", "03_\u56fe\u8868", "04_\u6587\u7ae0", "05_\u9644\u4ef6")
   repo_dirs <- c("scripts", "sql")
 
   for (candidate_dir in unique(c(start_dir, getwd()))) {
@@ -76,6 +76,10 @@ suppressPackageStartupMessages({
 cache_file <- "outputs_abp_map/cache/cache_main_ge18h_Model2_SOFA_minimal.rds"
 output_dir <- "outputs_abp_map/revision_major"
 if (!dir.exists(output_dir)) dir.create(output_dir, recursive = TRUE)
+m_imp <- as.integer(Sys.getenv("MIMICIV_MI_M", "40"))
+maxit_imp <- as.integer(Sys.getenv("MIMICIV_MI_MAXIT", "10"))
+seed_imp <- as.integer(Sys.getenv("MIMICIV_MI_SEED", "42"))
+build_figure1 <- identical(Sys.getenv("MIMICIV_BUILD_FIGURE1", "0"), "1")
 
 stopifnot(file.exists(cache_file))
 cache <- readRDS(cache_file)
@@ -433,7 +437,7 @@ q4_outcome_table <- data.table(
 
 has_vars <- function(x, df) x[x %in% names(df)]
 
-run_mi_hours_only <- function(df, covars, hour_cols, m = 5, maxit = 10, seed = 42, max_retry_drop_na = 2) {
+run_mi_hours_only <- function(df, covars, hour_cols, m = 40, maxit = 10, seed = 42, max_retry_drop_na = 2) {
   keep_cols <- unique(c("stay_id", "time_lm_days", "event_lm", covars, hour_cols))
   dat0 <- as.data.frame(df[, ..keep_cols])
 
@@ -564,7 +568,7 @@ cov_main <- unique(has_vars(c(
   "drug_24h_sedative_tag"
 ), dat_lm18))
 
-mi_res <- run_mi_hours_only(dat_lm18, cov_main, hour_cols, m = 5, maxit = 10, seed = 42)
+mi_res <- run_mi_hours_only(dat_lm18, cov_main, hour_cols, m = m_imp, maxit = maxit_imp, seed = seed_imp)
 imp <- mi_res$imp
 
 completed_list <- lapply(seq_len(imp$m), function(i) {
@@ -609,6 +613,7 @@ pheno_model_overall <- data.table(
   Value = pooled_wald_p(pheno_model, c("map_qQ1", "map_qQ3", "map_qQ4"))
 )
 
+if (build_figure1) {
 flow_box <- function(xmin, xmax, ymin, ymax, label, fill, size = 0.38, text_size = 3.95, lineheight = 1.00) {
   list(
     annotate("rect", xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax,
@@ -623,13 +628,13 @@ fc <- flow_counts[1]
 main_nodes <- list(
   list(y = 13.6, label = sprintf("Sepsis-3 ICU stays in MIMIC-IV v3.1\nn = %s", format(fc$total_sepsis_icu, big.mark = ",")), fill = "#d7efe9"),
   list(y = 11.75, label = sprintf("First ICU admission\nn = %s", format(fc$first_icu, big.mark = ",")), fill = "#e8f5f2"),
-  list(y = 9.9, label = sprintf("Adult first-ICU stays with ICU LOS ≥24 h\nn = %s", format(fc$adults_ge18, big.mark = ",")), fill = "#edf4ef"),
+  list(y = 9.9, label = sprintf("Adult first-ICU stays with ICU LOS \u226524 h\nn = %s", format(fc$adults_ge18, big.mark = ",")), fill = "#edf4ef"),
   list(y = 8.05, label = sprintf("No malignancy\nn = %s", format(fc$no_malignancy, big.mark = ",")), fill = "#edf4ef"),
   list(y = 6.2, label = sprintf("Pre-landmark design cohort\nn = %s", format(fc$pre_landmark_design, big.mark = ",")), fill = "#f4f0e8"),
   list(y = 4.35, label = sprintf("24-h landmark-eligible cohort\nn = %s", format(fc$landmark_eligible, big.mark = ",")), fill = "#f2eadf"),
   list(y = 2.5, label = sprintf("Any invasive ABP-MAP in first 24 h\n(itemid 220052)\nn = %s", format(fc$any_abp, big.mark = ",")), fill = "#f6ebd9"),
-  list(y = 0.75, label = sprintf("≥18 observed hourly ABP-MAP values\nn = %s", format(fc$ge18, big.mark = ",")), fill = "#f8dfc5"),
-  list(y = -1.35, label = sprintf("Primary analyzed cohort\n≥18 h + post-imputation QC pass\nn = %s", format(fc$analyzed_ge18, big.mark = ",")), fill = "#f3c7a6")
+  list(y = 0.75, label = sprintf("\u226518 observed hourly ABP-MAP values\nn = %s", format(fc$ge18, big.mark = ",")), fill = "#f8dfc5"),
+  list(y = -1.35, label = sprintf("Primary analyzed cohort\n\u226518 h + post-imputation QC pass\nn = %s", format(fc$analyzed_ge18, big.mark = ",")), fill = "#f3c7a6")
 )
 
 exclude_nodes <- list(
@@ -644,7 +649,7 @@ exclude_nodes <- list(
 )
 
 branch_nodes <- list(
-  list(x = -3.35, y = -4.20, label = sprintf("Sensitivity cohort\n≥20 observed hours\nn = %s", format(fc$analyzed_ge20, big.mark = ",")), fill = "#f0dcc9"),
+  list(x = -3.35, y = -4.20, label = sprintf("Sensitivity cohort\n\u226520 observed hours\nn = %s", format(fc$analyzed_ge20, big.mark = ",")), fill = "#f0dcc9"),
   list(x = 3.35, y = -4.20, label = sprintf("Sensitivity cohort\n24/24 observed hours\nn = %s", format(fc$analyzed_ge24, big.mark = ",")), fill = "#ead3bc")
 )
 
@@ -692,7 +697,7 @@ p <- p +
            linewidth = 0.34, color = "#55636b",
            arrow = arrow(length = unit(0.12, "inches"), type = "closed")) +
   annotate("text", x = 0, y = -5.85,
-           label = "Primary cohort required ≥18 observed hourly invasive ABP-MAP values in the first 24 h; sensitivity cohorts used ≥20 h and complete 24/24 h observation thresholds.",
+           label = "Primary cohort required \u226518 observed hourly invasive ABP-MAP values in the first 24 h; sensitivity cohorts used \u226520 h and complete 24/24 h observation thresholds.",
            family = "sans", size = 3.45, color = "#33424a")
 
 flow_box <- function(xmin, xmax, ymin, ymax, label, fill, size = 0.38, text_size = 3.80, lineheight = 0.98) {
@@ -792,6 +797,7 @@ ggsave(fig_pdf, p, width = 13.0, height = 12.4, bg = "#fbfaf6")
 if (interactive()) {
   print(p)
 }
+}
 
 fwrite(q4_profile_table, file.path(output_dir, "Table_R11_q4_deep_phenotype.csv"))
 fwrite(q4_outcome_table, file.path(output_dir, "Table_R12_q4_survivors_vs_nonsurvivors.csv"))
@@ -801,5 +807,6 @@ fwrite(flow_counts, file.path(output_dir, "Table_R14_flow_counts_for_figure1.csv
 
 try(dbDisconnect(con), silent = TRUE)
 
-cat("\nQ4 deep phenotype analysis and Figure 1 generation completed.\n")
+cat("\nQ4 deep phenotype analysis completed.\n")
+if (build_figure1) cat("Figure 1 generation completed.\n")
 cat("Output directory:", normalizePath(output_dir), "\n")
