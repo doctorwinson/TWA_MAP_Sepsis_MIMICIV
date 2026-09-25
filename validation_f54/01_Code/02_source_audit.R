@@ -1,0 +1,20 @@
+invisible(Sys.setlocale("LC_CTYPE", "English_United States.utf8"))
+suppressPackageStartupMessages({library(DBI);library(odbc);library(data.table)})
+d <- as.data.table(readRDS("restricted_cache/source_enriched.rds"))
+con <- dbConnect(odbc(),dsn="mimic4_v31",timeout=15)
+dbExecute(con,"SET default_transaction_read_only=on")
+dbExecute(con,"SET statement_timeout='15min'")
+cols <- as.data.table(dbGetQuery(con,"SELECT table_schema, table_name,column_name FROM information_schema.columns WHERE table_name IN ('sepsis3','bdmcc_population','cohort_design_abp') ORDER BY table_schema,table_name,ordinal_position"))
+fwrite(cols,"04_QC/source_columns.csv")
+print(cols[table_name=="sepsis3"])
+views <- dbGetQuery(con,"SELECT schemaname,viewname,definition FROM pg_views WHERE schemaname='bdmcc' AND viewname IN ('sepsis3','bdmcc_population')")
+if(nrow(views))writeLines(views$definition,"04_QC/available_source_view_definitions.sql")
+for(v in c("crtr_sepsis3_suspected_infection_time","crtr_sepsis3_sofa_time"))d[,(paste0(v,"_hours")):=as.numeric(difftime(get(v),intime,units="hours"))]
+metrics <- data.table(metric=c("all_source","recorded_by24","SI_after24_among_recorded_by24","SOFA_after24_among_recorded_by24","recorded_equals_earlier_component","recorded_equals_later_component"),
+ n=c(nrow(d),sum(d$onset_hours<=24),sum(d$onset_hours<=24 & d$crtr_sepsis3_suspected_infection_time_hours>24,na.rm=TRUE),sum(d$onset_hours<=24 & d$crtr_sepsis3_sofa_time_hours>24,na.rm=TRUE),sum(d$onset_hours==pmin(d$crtr_sepsis3_suspected_infection_time_hours,d$crtr_sepsis3_sofa_time_hours),na.rm=TRUE),sum(d$onset_hours==pmax(d$crtr_sepsis3_suspected_infection_time_hours,d$crtr_sepsis3_sofa_time_hours),na.rm=TRUE)))
+fwrite(metrics,"04_QC/sepsis_timing_component_audit.csv");print(metrics)
+query <- "WITH s0 AS (SELECT * FROM bdmcc.bdmcc_population WHERE crtr_sepsis3=1), s1 AS(SELECT * FROM s0 WHERE icu_subject_order=1),s2 AS(SELECT * FROM s1 WHERE outtime-intime>=interval '24 hours' AND age>=18),s3 AS(SELECT * FROM s2 WHERE icd_malignancy=0 AND icd_pregnancy=0),s4 AS(SELECT * FROM s3 WHERE crtr_sepsis3_time<=intime+interval '24 hours'),s5 AS(SELECT p.* FROM s4 p LEFT JOIN mimiciv_hosp.admissions a USING(hadm_id) WHERE (a.deathtime IS NULL OR a.deathtime>p.intime+interval '24 hours') AND p.day30_los>24),h AS(SELECT stay_id,count(*) FILTER(WHERE map_mean IS NOT NULL) nh FROM bdmcc.map_hourly_final_abp GROUP BY stay_id) SELECT (SELECT count(*) FROM s0) source,(SELECT count(*) FROM s1) first_icu,(SELECT count(*) FROM s2) adult_los24,(SELECT count(*) FROM s3) no_cancer_pregnancy,(SELECT count(*) FROM s4) sepsis_by24,(SELECT count(*) FROM s5) landmark_alive,(SELECT count(*) FROM s5 LEFT JOIN h USING(stay_id) WHERE coalesce(nh,0)>=18) observed18"
+flow <- as.data.table(dbGetQuery(con,query))
+fwrite(flow,"02_Results/source_flow.csv");print(flow)
+saveRDS(list(metrics=metrics,flow=flow),"restricted_cache/source_audit.rds")
+dbDisconnect(con)

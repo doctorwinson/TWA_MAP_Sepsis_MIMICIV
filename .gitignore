@@ -15,3 +15,11 @@ validation_f53/04_QC/
 *.rds
 *.Rdata
 *.RData
+validation_f54/restricted_cache/
+validation_f54/02_Results/
+validation_f54/04_QC/
+validation_f54/04_Figures/
+validation_f54/99_Development/
+validation_f54/*.csv
+validation_f54/*.docx
+validation_f54/*.pdf

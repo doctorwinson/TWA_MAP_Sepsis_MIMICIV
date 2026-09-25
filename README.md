@@ -1,5 +1,13 @@
 # TWA-MAP Sepsis MIMIC-IV: Public Reproduction Code
 
+## Current corrected-cohort workflow: F54 (2026-09-25)
+
+Use [validation_f54](validation_f54/README.md) for the corrected hour-24 sepsis-landmark analysis. It supersedes the legacy primary results: 7,001 patients, 917 deaths, two imputation specifications with 40 datasets and 30 iterations each. The public release contains code only, not patient-level data. Upstream source dependencies remain explicitly documented; this is not a raw-MIMIC-only reconstruction of every inherited variable. Internal calendar-period comparisons are not external validation, and complete-observation/later-period results were weak.
+
+The original Scientific Reports submission is closed. Older scripts below and `validation_f53` are retained for provenance and must not be mistaken for the current F54 results.
+
+## Legacy workflow
+
 This repository contains the English public-release SQL and R workflow used to reproduce the downstream extraction, exposure construction, statistical analyses, tables, and figures for the TWA-MAP sepsis study.
 
 ## Repository structure
@@ -30,7 +38,7 @@ TWA_MAP_Sepsis_MIMICIV/
 
 ## Scope
 
-This release contains the public SQL and R scripts required to reproduce the final downstream analysis chain from the derived Sepsis-3 source cohort. Historical scripts, exploratory scripts, backup scripts, patient-level data, and generated output files are intentionally excluded.
+The legacy scripts reproduce the earlier downstream analysis chain from the derived Sepsis-3 source cohort. They are retained as historical code; they are not the canonical corrected F54 analysis. Patient-level data and generated outputs are excluded from this repository.
 
 The SQL workflow starts from an existing Sepsis-3 base cohort and builds the downstream MAP and vasopressor exposure tables used by the R analyses. The upstream derived Sepsis-3 source cohort was constructed using the operational criteria described in the manuscript Methods.
 
