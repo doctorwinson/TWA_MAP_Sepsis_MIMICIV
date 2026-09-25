@@ -68,6 +68,10 @@ Then run the R scripts in this order:
 
 This release does not include patient-level data. Access to MIMIC-IV requires completion of PhysioNet credentialing and acceptance of the relevant data use agreement.
 
+## Post hoc validation extension
+
+The separate [`validation_f53`](validation_f53/README.md) package adds clinical-context and SOFA analyses, retrospective internal temporal stability checks, and exploratory eICU in-hospital mortality transportability. It preserves the original workflow and explicitly documents source-cohort dependencies, landmark-onset eligibility findings, missing-data conventions and the difference between hospital and day-30 outcomes. It does not claim definitive external validation or causal pathway identification.
+
 ## Notes
 
 This repository provides code only. It does not redistribute MIMIC-IV data, patient-level derived tables, local database credentials, or generated analysis outputs.

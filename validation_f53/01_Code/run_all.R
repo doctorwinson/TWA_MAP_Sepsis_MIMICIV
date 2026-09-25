@@ -1,0 +1,12 @@
+invisible(Sys.setlocale("LC_CTYPE","English_United States.utf8"))
+dirs<-c("02_Results","03_Report","04_QC","restricted_cache")
+for(d in dirs)dir.create(d,recursive=TRUE,showWarnings=FALSE)
+rscript<-file.path(R.home("bin"),"Rscript.exe")
+if(!file.exists(rscript))rscript<-file.path(R.home("bin"),"Rscript")
+run<-function(file){status<-system2(rscript,shQuote(file.path("01_Code",file)));if(status!=0)stop("Failed: ",file)}
+for(f in c("01_rebuild_m40.R","02_extract_context.R","03_phenotype_validation.R","04_eicu_transportability.R","06_full_cohort_blocks.R","07_diagnostics_and_interactions.R"))run(f)
+Sys.setenv(F53_IMPUTATION_SCOPE="complete_domains");run("05_enriched_imputation_sensitivity.R")
+Sys.setenv(F53_IMPUTATION_SCOPE="full");run("05_enriched_imputation_sensitivity.R")
+run("08_figures.R")
+run("09_verify_results.R")
+cat("Analysis complete. Generate Word reports separately with build_reports.py.\n")

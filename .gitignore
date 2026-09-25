@@ -8,3 +8,10 @@ Thumbs.db
 *.log
 data/
 outputs_abp_map/
+validation_f53/restricted_cache/
+validation_f53/02_Results/
+validation_f53/03_Report/
+validation_f53/04_QC/
+*.rds
+*.Rdata
+*.RData
