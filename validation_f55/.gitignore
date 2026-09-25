@@ -1,0 +1,8 @@
+restricted_cache/
+02_Results/
+04_QC/
+04_Figures/
+*.rds
+*.RData
+*.log
+.Renviron

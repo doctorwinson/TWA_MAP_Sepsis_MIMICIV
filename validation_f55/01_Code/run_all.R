@@ -1,0 +1,18 @@
+invisible(Sys.setlocale("LC_CTYPE", "English_United States.utf8"))
+for(path in c("restricted_cache","02_Results","04_QC","04_Figures"))dir.create(path,showWarnings=FALSE,recursive=TRUE)
+run<-function(name){
+ cat("Running",name,"\n")
+ code<-system2(file.path(R.home("bin"),"Rscript.exe"),file.path("01_Code",name),stdout=file.path("04_QC",paste0("pipeline_",name,".log")),stderr=file.path("04_QC",paste0("pipeline_",name,".stderr.log")))
+ if(code!=0)stop("Failed: ",name)
+}
+Sys.setenv(F54_MAXIT="30",F54_RESUME_MI="")
+if(Sys.getenv("F55_SKIP_EXTRACT")!="1")run("19_rebuild_source.R")
+Sys.setenv(F54_MI_SCOPE="primary");run("01_impute.R")
+Sys.setenv(F54_MI_SCOPE="enriched");run("01_impute.R")
+Sys.unsetenv("F54_MI_SCOPE")
+run("04_models.R")
+run("13_finalize_analyses.R")
+run("22_independent_audit.R")
+run("25_verify_standard_fields.R")
+run("14_verify_statistics.R")
+cat("F55 numerical workflow complete. Manuscript generation/rendering is a separate local workflow.\n")

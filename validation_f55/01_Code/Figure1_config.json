@@ -1,0 +1,78 @@
+{
+  "version": "F55",
+  "figure_name": "Figure1_source_reconstructed",
+  "figure_title": "",
+  "cohorts": [
+    {
+      "name": "",
+      "main_flow": [
+        {
+          "label": "Sepsis-3 ICU stays in MIMIC-IV v3.1",
+          "n": 41295
+        },
+        {
+          "label": "Adult first ICU stays continuing beyond hour 24",
+          "n": 25105
+        },
+        {
+          "label": "No coded malignancy or pregnancy-related condition",
+          "n": 21151
+        },
+        {
+          "label": "Sepsis onset by hour 24; alive and still in ICU at the landmark",
+          "n": 18950
+        },
+        {
+          "label": "At least 18 of 24 hourly invasive MAP values observed",
+          "n": 7305
+        },
+        {
+          "label": "Primary analysis cohort; 40 imputed hourly MAP datasets",
+          "n": 7289
+        }
+      ],
+      "exclusions": [
+        {
+          "after_step": 1,
+          "label": "Repeat stays, age <18 years, or ICU stay ending by hour 24",
+          "n": 16190
+        },
+        {
+          "after_step": 2,
+          "label": "Coded malignancy or pregnancy-related condition",
+          "n": 3954
+        },
+        {
+          "after_step": 3,
+          "label": "Sepsis onset after hour 24 (2,109) or death by the landmark (92)",
+          "n": 2201
+        },
+        {
+          "after_step": 4,
+          "label": "No or insufficient valid hourly invasive MAP observations",
+          "n": 11645
+        },
+        {
+          "after_step": 5,
+          "label": "Missing first-day body weight before imputation",
+          "n": 16
+        }
+      ],
+      "final_groups": []
+    }
+  ],
+  "layout": {
+    "fig_w": 8.0,
+    "main_w": 3.3,
+    "main_h": 0.78,
+    "exclusion_w": 3.35,
+    "exclusion_h": 0.82,
+    "exclusion_gap": 0.62,
+    "panel_margin": 0.45
+  },
+  "metadata": {
+    "database": "MIMIC-IV v3.1",
+    "unit": "ICU stays",
+    "design": "24-hour landmark; onset is the later of qualifying SOFA and suspected-infection times"
+  }
+}

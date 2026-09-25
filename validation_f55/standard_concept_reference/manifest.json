@@ -1,0 +1,54 @@
+{
+  "commit": "303d26c623dcc9c49cc0f204468d4acc2f063797",
+  "note": "Reference snapshots document published algorithms. They are not claimed to be the historical build revision of the local mimiciv_derived tables. They use BigQuery syntax; execution requires the official PostgreSQL build workflow and dependencies.",
+  "files": [
+    {
+      "concept": "demographics/weight_durations.sql",
+      "url": "https://raw.githubusercontent.com/MIT-LCP/mimic-code/303d26c623dcc9c49cc0f204468d4acc2f063797/mimic-iv/concepts/demographics/weight_durations.sql",
+      "sha256": "82e23dd4ac6d0dc316438d08ee3f5edab2c4ca0f6535c23b3ab40eb7cafcd795",
+      "status": "reference_snapshot_not_executed"
+    },
+    {
+      "concept": "firstday/first_day_weight.sql",
+      "url": "https://raw.githubusercontent.com/MIT-LCP/mimic-code/303d26c623dcc9c49cc0f204468d4acc2f063797/mimic-iv/concepts/firstday/first_day_weight.sql",
+      "sha256": "be5dbedf07b372ebb5e57f9a8004beaa988ac347e73822b72aedba34af3b69a3",
+      "status": "reference_snapshot_not_executed"
+    },
+    {
+      "concept": "treatment/ventilation.sql",
+      "url": "https://raw.githubusercontent.com/MIT-LCP/mimic-code/303d26c623dcc9c49cc0f204468d4acc2f063797/mimic-iv/concepts/treatment/ventilation.sql",
+      "sha256": "8d7ce56f2d71c8aab18625c7af03c7324cdabfd87c8a431077d755672909a2b2",
+      "status": "reference_snapshot_not_executed"
+    },
+    {
+      "concept": "comorbidity/charlson.sql",
+      "url": "https://raw.githubusercontent.com/MIT-LCP/mimic-code/303d26c623dcc9c49cc0f204468d4acc2f063797/mimic-iv/concepts/comorbidity/charlson.sql",
+      "sha256": "1a6d13edbef12fad4deec3748d5ac903357233fdcf2ca4bd183db257ca915fb2",
+      "status": "reference_snapshot_not_executed"
+    },
+    {
+      "concept": "firstday/first_day_sofa.sql",
+      "url": "https://raw.githubusercontent.com/MIT-LCP/mimic-code/303d26c623dcc9c49cc0f204468d4acc2f063797/mimic-iv/concepts/firstday/first_day_sofa.sql",
+      "sha256": "e56ae4c67d7b19bf8d47f262011bcd888bdb04160b1e9ce744423243b867892e",
+      "status": "reference_snapshot_not_executed"
+    },
+    {
+      "concept": "firstday/first_day_rrt.sql",
+      "url": "https://raw.githubusercontent.com/MIT-LCP/mimic-code/303d26c623dcc9c49cc0f204468d4acc2f063797/mimic-iv/concepts/firstday/first_day_rrt.sql",
+      "sha256": "24b7035b85822139f5b7ab952598ff2dcd35067040dd23c239e6db81ce43c859",
+      "status": "reference_snapshot_not_executed"
+    },
+    {
+      "concept": "sepsis/sepsis3.sql",
+      "url": "https://raw.githubusercontent.com/MIT-LCP/mimic-code/303d26c623dcc9c49cc0f204468d4acc2f063797/mimic-iv/concepts/sepsis/sepsis3.sql",
+      "sha256": "1d06e0efed85220c8a9cfd27ee9ee50e4dfbbe7a4975a7d2f7af72a92766692a",
+      "status": "reference_snapshot_not_executed"
+    },
+    {
+      "concept": "score/sapsii.sql",
+      "url": "https://raw.githubusercontent.com/MIT-LCP/mimic-code/303d26c623dcc9c49cc0f204468d4acc2f063797/mimic-iv/concepts/score/sapsii.sql",
+      "sha256": "a7f474712fd8e8e68b7293d1e70e7f42b19fe2712c9c8a8b14149a20a1f52df7",
+      "status": "reference_snapshot_not_executed"
+    }
+  ]
+}
