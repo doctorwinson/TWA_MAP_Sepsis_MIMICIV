@@ -4,6 +4,8 @@
 
 Use [validation_f55](validation_f55/README.md) for the explicit study-specific upstream reconstruction and current analyses: 7,289 patients,948 deaths; two m=40/30-iteration imputations. Historical bdmcc cohort fields are no longer required, while documented standard MIMIC-derived concepts remain dependencies. Weak complete-observation and later-period results are retained. No patient-level data are released.
 
+The [clinical-context extension](validation_f55/extensions/clinical_context/README.md), published on 25 October 2026, supplies the supplementary onset, recording-completeness, death-timing, follow-up and piecewise-contrast scripts. These use the retained F55 cohort and completed datasets. Their publication does not change the primary analysis or establish a newly verified one-command rebuild.
+
 ## Superseded corrected-cohort workflow: F54
 
 Use [validation_f54](validation_f54/README.md) for the corrected hour-24 sepsis-landmark analysis. It supersedes the legacy primary results: 7,001 patients, 917 deaths, two imputation specifications with 40 datasets and 30 iterations each. The public release contains code only, not patient-level data. Upstream source dependencies remain explicitly documented; this is not a raw-MIMIC-only reconstruction of every inherited variable. Internal calendar-period comparisons are not external validation, and complete-observation/later-period results were weak.

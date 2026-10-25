@@ -1,6 +1,6 @@
 # F55: explicit upstream reconstruction and observational stability analyses
 
-This is the current study-specific analysis workflow. It supersedes F54 for the proposed PLOS ONE manuscript. It is not an external validation, causal mediation analysis or an estimate of an optimal MAP target.
+This is the current study-specific analysis workflow. It supersedes F54 for the current manuscript. It is not an external validation, causal mediation analysis or an estimate of an optimal MAP target.
 
 ## Data access and dependencies
 
@@ -41,3 +41,7 @@ Final Q4-versus-Q2 HRs (95% CI): primary2.10(1.72-2.56), phenotype1.48(1.21-1.81
 `19` reconstructs; `01` imputes; `04` models; `05` splines/diagnostics; `06` enriched MI/tables; `07` figures; `08` time-varying coefficients; `12` paired definition sensitivities; `13` orders downstream stages; `22` independently reaggregates raw hourly MAP/death; `25` rechecks weight/RRT/SOFA; `14` verifies results. The local final run passed238 numerical assertions; raw MAP/outcome discrepancies were zero.
 
 All released R scripts are syntax checked. These checks do not establish missing-at-random or clinical causality. Figure1 uses the separate global Scientific Cohort Flowchart bundled renderer with the included count configuration; geometry and private manuscript tooling are not reimplemented here.
+
+## Supplementary clinical-context and follow-up extension
+
+See [extensions/clinical_context](extensions/clinical_context/README.md) for the later supplementary scripts, including argument conventions, dependencies and manuscript-output mapping. They use the locally generated restricted cache, do not rerun primary imputation, and write aggregate summaries. The direct early/late comparison refits the already specified piecewise model. The primary pipeline is unchanged.
